@@ -3,6 +3,7 @@ package com.imageprocessing.imageprocessproject.controller;
 
 import com.imageprocessing.imageprocessproject.dto.ImageResponseDTO;
 import com.imageprocessing.imageprocessproject.dto.TransformRequestDTO;
+import com.imageprocessing.imageprocessproject.messaging.ImageProducer;
 import com.imageprocessing.imageprocessproject.model.Image;
 import com.imageprocessing.imageprocessproject.service.ImageService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ImageController {
     private final ImageService imageService;
+    private final ImageProducer imageProducer;
 
     @PostMapping("/images")
     public ResponseEntity<Image> uploadImage (@RequestParam("file") MultipartFile file, Authentication authentication) throws IOException {
@@ -40,15 +42,28 @@ public class ImageController {
        }
     }
 
+//    @RequestMapping("/images/{id}/transform")
+//    public ResponseEntity<ImageResponseDTO> createImage(@PathVariable Long id, @RequestBody TransformRequestDTO requestDTO, Authentication authentication) throws IOException {
+//            Image image = imageService.transformImage(id, requestDTO, authentication.getName());
+//        try {
+//            return ResponseEntity.status(HttpStatus.OK).body(new ImageResponseDTO(image));
+//        }
+//        catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ImageResponseDTO(null));
+//        }
+//    }
+
     @RequestMapping("/images/{id}/transform")
-    public ResponseEntity<ImageResponseDTO> createImage(@PathVariable Long id, @RequestBody TransformRequestDTO requestDTO, Authentication authentication) throws IOException {
-            Image image = imageService.transformImage(id, requestDTO, authentication.getName());
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(new ImageResponseDTO(image));
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ImageResponseDTO(null));
-        }
+    public ResponseEntity<String> createImage(@PathVariable("id") Long id, @RequestBody TransformRequestDTO transformRequestDTO, Authentication authentication) {
+
+        transformRequestDTO.setId(id);
+        transformRequestDTO.setUsername(authentication.getName());
+
+        imageProducer.sendMessage(transformRequestDTO);
+
+        return ResponseEntity.accepted().body("Donusum istegi kuyruga eklendi");
+
+
     }
 
     @GetMapping("/images")

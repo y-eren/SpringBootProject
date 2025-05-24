@@ -3,10 +3,14 @@ package com.imageprocessing.imageprocessproject.dto;
 
 import lombok.*;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
-public class TransformRequestDTO {
+public class TransformRequestDTO  {
 
+    private Long id;
+    private String username;
     private Transformations transformations;
     @Data
     public static class Transformations {
